@@ -21,7 +21,7 @@ set :secret_2, SecureRandom.base64(32)
 set :application, "danbooru"
 set :repository,  "git://github.com/r888888888/danbooru.git"
 set :scm, :git
-set :user, "albert"
+set :user, "danbooru"
 set :deploy_to, "/var/www/danbooru2"
 
 require 'capistrano-unicorn'
