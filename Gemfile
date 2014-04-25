@@ -53,7 +53,3 @@ group :development do
   gem 'ruby-prof'
   gem 'sql-logging'
 end
-
-group :development, :test do
-  gem 'pry'
-end
