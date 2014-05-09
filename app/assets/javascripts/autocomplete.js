@@ -11,8 +11,8 @@
 
   Danbooru.Autocomplete.test_local_storage = function() {
     try {
-      localStorage.setItem("test", "test");
-      localStorage.removeItem("test");
+      $.localStorage.setItem("test", "test");
+      $.localStorage.removeItem("test");
       return true;
     } catch(e) {
       return false;
@@ -20,8 +20,18 @@
   }
 
   Danbooru.Autocomplete.prune_local_storage = function() {
-    if (this.enable_local_storage && localStorage.length > 10000) {
-      $.localStorage.removeAll();
+    if (this.enable_local_storage) {
+      var now = new Date();
+      $.each($.localStorage.keys(), function(i, key) {
+        var obj = $.localStorage.get(key);
+        if (obj.expires < now) {
+          $.localStorage.remove(key);
+        }
+      });
+
+      if ($.localStorage.length > 4000) {
+        $.localStorage.removeAll();        
+      }
     }
   }
 
