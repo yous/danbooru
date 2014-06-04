@@ -6,6 +6,8 @@
       <%= form_tag(post_versions_path, :method => :get, :class => "simple_form") do %>
         <%= search_field "updater_name", :label => "User" %>
         <%= search_field "post_id", :label => "Post" %>
+        <%= search_field "added", :label => "Added tags" %>
+        <%= search_field "removed", :label => "Removed tags" %>
         <%= submit_tag "Search" %>
       <% end %>
     </div>

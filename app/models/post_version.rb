@@ -2,6 +2,7 @@ class PostVersion < ActiveRecord::Base
   belongs_to :post
   belongs_to :updater, :class_name => "User"
   before_validation :initialize_updater
+  after_save :initialize_changes_async
   attr_accessible :post_id, :is_status_locked, :is_rating_locked, :is_note_locked, :source, :rating, :tag_string, :old_tag_string, :old_parent_id, :old_source, :old_rating, :last_noted_at, :parent_id, :tags
 
   module SearchMethods
@@ -31,6 +32,16 @@ class PostVersion < ActiveRecord::Base
 
       if params[:start_id].present?
         q = q.where("id <= ?", params[:start_id].to_i)
+      end
+
+      if params[:added].present?
+        q = q.where("post_versions.added_index @@ to_tsquery('danbooru', E?)", params[:added].to_escaped_for_tsquery)
+        q = q.where("post_versions.added_index is not null")
+      end
+
+      if params[:removed].present?
+        q = q.where("post_versions.removed_index @@ to_tsquery('danbooru', E?)", params[:removed].to_escaped_for_tsquery)
+        q = q.where("post_versions.removed_index is not null")
       end
 
       q
@@ -74,6 +85,16 @@ class PostVersion < ActiveRecord::Base
       end
     end
     return diffs
+  end
+
+  def initialize_changes_async
+    delay(:queue => "default").initialize_changes
+  end
+
+  def initialize_changes
+    changed = diff(previous)
+    update_column(:added, changed[:added_tags].join(" "))
+    update_column(:removed, changed[:removed_tags].join(" "))
   end
 
   def diff(version)
@@ -193,5 +214,9 @@ class PostVersion < ActiveRecord::Base
     options[:methods] ||= []
     options[:methods] += [:added_tags, :removed_tags, :obsolete_added_tags, :obsolete_removed_tags, :unchanged_tags, :updater_name]
     super(options, &block)
+  end
+
+  def hidden_attributes
+    super + [:added_index, :removed_index]
   end
 end
